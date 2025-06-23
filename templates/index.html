@@ -1,115 +1,85 @@
-<!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Field</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="index.css"/>
-    <link rel="icon" href="./static/assets/images/cacao3.png" type="png">
-</head>
-<body class="antialiased">
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
-        <div class="container mx-auto px-6">
-            <nav class="flex items-center py-4">
-                <div class="flex items-center gap-3">
-                    <img src="./static/assets/images/cacao1.png" class="w-10 h-10 bg-transparent">
-                    <h1 class="text-2xl font-bold text-[#4A3F35]">Smart Field</h1>
-                </div>
-            </nav>
+{% extends "base.html" %}
+
+{% block title %}Inicio - Smart Field{% endblock %}
+
+{% block content %}
+
+<section id="inicio" class="py-24 md:py-32 hero-bg">
+    <div class="container mx-auto px-6 text-center">
+        <h2 class="text-4xl md:text-5xl font-extrabold text-[#4A3F35] leading-tight">
+            No deje la calidad al azar.<br/>
+            <span class="text-[#6F4E37]">Coseche con precisión milimétrica.</span>
+        </h2>
+        <p class="mt-6 text-lg md:text-xl max-w-3xl mx-auto text-gray-600">
+            Nuestra plataforma analiza la madurez de su cacao con un 98% de precisión, eliminando las conjeturas para maximizar el valor de cada cosecha.
+        </p>
+        <a href="/analysis" class="mt-10 inline-block bg-[#6F4E37] text-white font-bold px-10 py-4 rounded-lg shadow-lg hover:bg-[#5a402d] transition-transform hover:scale-105">
+            Ver la Solución en Acción
+        </a>
+    </div>
+</section>
+
+<section id="problema" class="py-20 md:py-24 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-12 md:mb-16">
+            <h3 class="text-3xl md:text-4xl font-bold text-[#4A3F35]">Cada fruto mal clasificado es una pérdida</h3>
+            <p class="mt-4 max-w-3xl mx-auto text-gray-600">
+                La clasificación manual es inconsistente. Un error en la identificación del punto de madurez perfecto reduce la calidad, afecta el sabor y disminuye directamente sus ganancias.
+            </p>
         </div>
-    </header>
-
-    <main>
-        <section id="inicio" class="py-24 md:py-32 hero-bg">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-4xl md:text-5xl font-extrabold text-[#4A3F35] leading-tight">No deje la calidad al azar. <br/> <span class="text-[#6F4E37]">Coseche con precisión milimétrica.</span></h2>
-                <p class="mt-6 text-lg md:text-xl max-w-3xl mx-auto text-gray-600">
-                    Nuestra plataforma analiza la madurez de su cacao con un 98% de precisión, eliminando las conjeturas para maximizar el valor de cada cosecha.
-                </p>
-                <a href="/analysis" class="mt-10 inline-block bg-[#6F4E37] text-white font-bold px-10 py-4 rounded-lg shadow-lg hover:bg-[#5a402d] transition-transform hover:scale-105">
-                    Ver la Solución en Acción
-                </a>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+                <h4 class="font-bold text-lg text-red-600">INMADURO</h4>
+                <p class="text-gray-600 mt-2">Pérdida de potencial de sabor y castigo en el precio.</p>
             </div>
-        </section>
-
-        <section id="problema" class="py-20 md:py-24 bg-white">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12 md:mb-16">
-                    <h3 class="text-3xl md:text-4xl font-bold text-[#4A3F35]">Cada fruto mal clasificado es una pérdida</h3>
-                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">
-                        La clasificación manual es inconsistente. Un error en la identificación del punto de madurez perfecto reduce la calidad, afecta el sabor y disminuye directamente sus ganancias.
-                    </p>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
-                        <h4 class="font-bold text-lg text-red-600">INMADURO</h4>
-                        <p class="text-gray-600 mt-2">Pérdida de potencial de sabor y castigo en el precio.</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
-                        <h4 class="font-bold text-lg text-yellow-600">PINTÓN</h4>
-                        <p class="text-gray-600 mt-2">Calidad inconsistente que afecta la reputación de su lote.</p>
-                    </div>
-                    <div class="bg-green-100 p-6 rounded-lg border-2 border-green-600 text-center ring-4 ring-green-100">
-                        <h4 class="font-bold text-lg text-green-700">PUNTO ÓPTIMO</h4>
-                        <p class="text-gray-800 mt-2 font-semibold">Máximo valor, calidad premium y el mejor precio de mercado.</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
-                        <h4 class="font-bold text-lg text-purple-600">SOBREMADURO</h4>
-                        <p class="text-gray-600 mt-2">Riesgo de fermentación y rechazo del lote completo.</p>
-                    </div>
-                </div>
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+                <h4 class="font-bold text-lg text-yellow-600">PINTÓN</h4>
+                <p class="text-gray-600 mt-2">Calidad inconsistente que afecta la reputación de su lote.</p>
             </div>
-        </section>
-
-        <section id="solucion" class="py-20 md:py-24 hero-bg">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12 md:mb-16">
-                    <h3 class="text-3xl md:text-4xl font-bold text-[#4A3F35]">Tecnología simplificada para su negocio</h3>
-                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">
-                        Clasificar nunca fue tan fácil. Nuestra plataforma funciona en tres simples pasos, integrándose perfectamente en su flujo de trabajo diario.
-                    </p>
-                </div>
-                <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-5 items-center gap-6 text-center">
-                    <div class="p-12 bg-white rounded-lg shadow-md border min-w-[220px] min-h-[300px] flex flex-col justify-center">
-                        <img src="./static/assets/images/folder.png" class="w-20 h-20 bg-transparent mx-auto">
-                        <h4 class="font-bold text-xl mt-6">1. Capture</h4>
-                        <p class="text-gray-500 mt-4">Tome una foto del fruto con cualquier smartphone.</p>
-                    </div>
-                    <div class="text-4xl font-light text-gray-300 hidden md:block">
-                        <img src="./static/assets/images/flecha.png" class="w-12 h-12 mx-auto">
-                    </div>
-                    <div class="p-12 bg-white rounded-lg shadow-md border min-w-[220px] min-h-[300px] flex flex-col justify-center">
-                        <img src="./static/assets/images/brain.png" class="w-20 h-20 bg-transparent mx-auto">
-                        <h4 class="font-bold text-xl mt-6">2. Analice</h4>
-                        <p class="text-gray-500 mt-4">Nuestra IA procesa la imagen en segundos.</p>
-                    </div>
-                    <div class="text-4xl font-light text-gray-300 hidden md:block">
-                        <img src="./static/assets/images/flecha.png" class="w-12 h-12 mx-auto">
-                    </div>
-                    <div class="p-12 bg-white rounded-lg shadow-md border min-w-[220px] min-h-[300px] flex flex-col justify-center">
-                        <img src="./static/assets/images/check.png" class="w-20 h-20 bg-transparent mx-auto">
-                        <h4 class="font-bold text-xl mt-6">3. Decida</h4>
-                        <p class="text-gray-500 mt-4">Reciba un veredicto claro y preciso sobre su madurez.</p>
-                    </div>
-                </div>
+            <div class="bg-green-100 p-6 rounded-lg shadow-md border-2 border-green-600 text-center ring-4 ring-green-100">
+                <h4 class="font-bold text-lg text-green-700">PUNTO ÓPTIMO</h4>
+                <p class="text-gray-800 mt-2 font-semibold">Máximo valor, calidad premium y el mejor precio de mercado.</p>
             </div>
-        </section>
-    </main>
-
-    <button id="scrollTopBtn" class="fixed bottom-6 right-6 bg-white p-2 rounded-full shadow-lg border border-gray-300 hover:shadow-xl transition-all z-50">
-        <img src="./static/assets/images/subir.png" alt="Subir" class="w-8 h-8">
-    </button>
-    <footer class=" text-white">
-        <div class="container mx-auto px-6 py-12 text-center text-gray-500">
-            <p class="font-semibold text-lg">Smart Field</p>
-            <p class="text-sm mt-2">&copy; 2025 Soluciones Agrícolas Inteligentes. Aumente su calidad, aumente sus ganancias.</p>
+            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+                <h4 class="font-bold text-lg text-purple-600">SOBREMADURO</h4>
+                <p class="text-gray-600 mt-2">Riesgo de fermentación y rechazo del lote completo.</p>
+            </div>
         </div>
-    </footer>
-        <script src="./static/analysis.js"></script>
-</body>
-</html>
+    </div>
+</section>
+
+<section id="solucion" class="py-20 md:py-24 hero-bg">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-12 md:mb-16">
+            <h3 class="text-3xl md:text-4xl font-bold text-[#4A3F35]">Tecnología simplificada para su negocio</h3>
+            <p class="mt-4 max-w-3xl mx-auto text-gray-600">
+                Clasificar nunca fue tan fácil. Nuestra plataforma funciona en tres simples pasos, integrándose perfectamente en su flujo de trabajo diario.
+            </p>
+        </div>
+        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-5 items-center gap-6 text-center">
+            <div class="p-12 bg-white rounded-lg shadow-md border min-w-[220px] min-h-[300px] flex flex-col justify-center">
+                <img src="{{ url_for('static', filename='assets/images/folder.png') }}" class="w-20 h-20 bg-transparent mx-auto">
+                <h4 class="font-bold text-xl mt-6">1. Capture</h4>
+                <p class="text-gray-500 mt-4">Tome una foto del fruto con cualquier smartphone.</p>
+            </div>
+            <div class="text-4xl font-light text-gray-300 hidden md:block">
+                <img src="{{ url_for('static', filename='assets/images/flecha.png') }}" class="w-12 h-12 mx-auto">
+            </div>
+            <div class="p-12 bg-white rounded-lg shadow-md border min-w-[220px] min-h-[300px] flex flex-col justify-center">
+                <img src="{{ url_for('static', filename='assets/images/brain.png') }}" class="w-20 h-20 bg-transparent mx-auto">
+                <h4 class="font-bold text-xl mt-6">2. Analice</h4>
+                <p class="text-gray-500 mt-4">Nuestra IA procesa la imagen en segundos.</p>
+            </div>
+            <div class="text-4xl font-light text-gray-300 hidden md:block">
+                <img src="{{ url_for('static', filename='assets/images/flecha.png') }}" class="w-12 h-12 mx-auto">
+            </div>
+            <div class="p-12 bg-white rounded-lg shadow-md border min-w-[220px] min-h-[300px] flex flex-col justify-center">
+                <img src="{{ url_for('static', filename='assets/images/check.png') }}" class="w-20 h-20 bg-transparent mx-auto">
+                <h4 class="font-bold text-xl mt-6">3. Decida</h4>
+                <p class="text-gray-500 mt-4">Reciba un veredicto claro y preciso sobre su madurez.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
