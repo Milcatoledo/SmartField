@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css"/>
 </head>
 <body class="antialiased">
 
@@ -41,7 +42,7 @@
                     <!-- Upload from Gallery -->
                     <label for="upload-file" class="upload-box cursor-pointer p-8 bg-white rounded-lg border-2 border-dashed flex flex-col items-center justify-center text-center">
                         <svg class="w-16 h-16 text-gray-300 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                         </svg>
                         <span class="font-semibold text-lg text-[#6F4E37]">Subir desde Galería</span>
                         <span class="text-sm text-gray-500 mt-1">Haga clic aquí para seleccionar un archivo</span>
@@ -50,10 +51,10 @@
 
                     <!-- Use Camera -->
                     <label for="take-photo" class="upload-box cursor-pointer p-8 bg-white rounded-lg border-2 border-dashed flex flex-col items-center justify-center text-center">
-                         <svg class="w-16 h-16 text-gray-300 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                           <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                         </svg>
+                        <svg class="w-16 h-16 text-gray-300 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                        </svg>
                         <span class="font-semibold text-lg text-[#6F4E37]">Usar Cámara</span>
                         <span class="text-sm text-gray-500 mt-1">Active su cámara para tomar una foto</span>
                     </label>
@@ -76,30 +77,30 @@
 
                     <!-- Result Card -->
                     <div id="result-card" class="mt-8 bg-white p-8 rounded-lg shadow-lg border-2">
-                         <h3 class="font-bold text-xl mb-4 text-center">Resultado del Análisis</h3>
-                         <div id="result-content" class="text-center">
+                        <h3 class="font-bold text-xl mb-4 text-center">Resultado del Análisis</h3>
+                        <div id="result-content" class="text-center">
                             <!-- Loader -->
                             <div id="loader" class="flex items-center justify-center flex-col">
-                                 <div class="w-12 h-12 border-4 border-t-[#6F4E37] border-gray-200 rounded-full animate-spin"></div>
-                                 <p class="mt-4 text-gray-500">Analizando, por favor espere...</p>
+                                <div class="w-12 h-12 border-4 border-t-[#6F4E37] border-gray-200 rounded-full animate-spin"></div>
+                                <p class="mt-4 text-gray-500">Analizando, por favor espere...</p>
                             </div>
-                           <!-- Final Result -->
-                           <div id="final-result" class="hidden">
-                               <p class="text-lg text-gray-500 mb-2">El estado de madurez es:</p>
-                               <p id="result-text" class="text-4xl font-extrabold"></p>
-                           </div>
-                         </div>
+                            <!-- Final Result -->
+                            <div id="final-result" class="hidden">
+                                <p class="text-lg text-gray-500 mb-2">El estado de madurez es:</p>
+                                <p id="result-text" class="text-4xl font-extrabold"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
-
     <footer class="bg-[#4A3F35] text-white">
         <div class="container mx-auto px-6 py-12 text-center text-gray-300">
             <p class="font-semibold text-lg">Smart Field</p>
             <p class="text-sm mt-2">&copy; 2025 Soluciones Agrícolas Inteligentes. Aumente su calidad, aumente sus ganancias.</p>
         </div>
     </footer>
+    <script src="analysis.js"></script>
 </body>
 </html>
