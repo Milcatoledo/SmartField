@@ -37,31 +37,92 @@ document.addEventListener('DOMContentLoaded', () => {
                 analysisSection.style.display = 'block';
                 resultCard.style.display = 'none';
                 finalResult.classList.add('hidden');
+                // Limpiar contenido previo de resultados
+                clearPreviousResults();
             };
             reader.readAsDataURL(file);
         }
     });
 
-    analyzeButton.addEventListener('click', () => {
+    analyzeButton.addEventListener('click', async () => {
         resultCard.style.display = 'block';
         loader.style.display = 'flex';
         finalResult.classList.add('hidden');
         
-        setTimeout(() => {
-            const results = [
-                { text: 'INMADURO', color: 'text-red-600', borderColor: 'border-red-500' },
-                { text: 'PINTÓN', color: 'text-yellow-600', borderColor: 'border-yellow-500' },
-                { text: 'PUNTO ÓPTIMO', color: 'text-green-700', borderColor: 'border-green-600' },
-                { text: 'SOBREMADURO', color: 'text-purple-600', borderColor: 'border-purple-500' }
-            ];
-            const randomResult = results[Math.floor(Math.random() * results.length)];
-
-            resultText.textContent = randomResult.text;
-            resultText.className = `text-4xl font-extrabold ${randomResult.color}`;
-            resultCard.className = `mt-8 bg-white p-8 rounded-lg shadow-lg border-2 ${randomResult.borderColor}`;
+        try {
+            // Obtener la imagen como base64
+            const imageDataUrl = imagePreview.src;
+            
+            // Enviar imagen al backend
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: imageDataUrl,
+                    model: 'cacao_model' // Puedes hacer esto configurable
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Mostrar resultado exitoso
+                resultText.textContent = result.class;
+                resultText.className = `text-4xl font-extrabold ${result.color}`;
+                resultCard.className = `mt-8 bg-white p-8 rounded-lg shadow-lg border-2 ${result.border_color}`;
+                
+                // Añadir información de confianza si está disponible
+                if (result.confidence) {
+                    const confidenceText = document.createElement('p');
+                    confidenceText.className = 'text-sm text-gray-500 mt-2';
+                    confidenceText.textContent = `Confianza: ${(result.confidence * 100).toFixed(1)}%`;
+                    finalResult.appendChild(confidenceText);
+                }
+                
+                // Añadir modelo usado
+                if (result.model_used) {
+                    const modelText = document.createElement('p');
+                    modelText.className = 'text-xs text-gray-400 mt-1';
+                    modelText.textContent = `Modelo: ${result.model_used}`;
+                    finalResult.appendChild(modelText);
+                }
+                
+                loader.style.display = 'none';
+                finalResult.classList.remove('hidden');
+            } else {
+                // Mostrar error
+                resultText.textContent = 'ERROR EN ANÁLISIS';
+                resultText.className = 'text-4xl font-extrabold text-red-600';
+                resultCard.className = 'mt-8 bg-white p-8 rounded-lg shadow-lg border-2 border-red-500';
+                
+                // Mostrar mensaje de error específico
+                const errorText = document.createElement('p');
+                errorText.className = 'text-sm text-red-500 mt-2';
+                errorText.textContent = result.error || 'Error desconocido';
+                finalResult.appendChild(errorText);
+                
+                loader.style.display = 'none';
+                finalResult.classList.remove('hidden');
+            }
+            
+        } catch (error) {
+            console.error('Error en la predicción:', error);
+            
+            // Mostrar error de conexión
+            resultText.textContent = 'ERROR DE CONEXIÓN';
+            resultText.className = 'text-4xl font-extrabold text-red-600';
+            resultCard.className = 'mt-8 bg-white p-8 rounded-lg shadow-lg border-2 border-red-500';
+            
+            const errorText = document.createElement('p');
+            errorText.className = 'text-sm text-red-500 mt-2';
+            errorText.textContent = 'No se pudo conectar con el servidor';
+            finalResult.appendChild(errorText);
+            
             loader.style.display = 'none';
             finalResult.classList.remove('hidden');
-        }, 2500);
+        }
     });
 
     // --- Cámara ---
@@ -94,6 +155,15 @@ document.addEventListener('DOMContentLoaded', () => {
         analysisSection.style.display = 'block';
         resultCard.style.display = 'none';
         finalResult.classList.add('hidden');
+        // Limpiar contenido previo de resultados
+        clearPreviousResults();
     });
+
+    // Función para limpiar resultados previos
+    function clearPreviousResults() {
+        // Limpiar elementos adicionales que se puedan haber añadido
+        const additionalElements = finalResult.querySelectorAll('p:not(#result-text):not(.text-lg)');
+        additionalElements.forEach(element => element.remove());
+    }
 
 });
