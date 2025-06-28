@@ -1,5 +1,6 @@
 # Entorno virtual
 venv/
+cocoaenv/
 
 # Archivos de caché de Python
 __pycache__/
