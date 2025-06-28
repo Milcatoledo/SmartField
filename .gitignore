@@ -1,4 +1,7 @@
 # Entorno virtual
+models/
+confusion_matrix_models.py
+test_model.py
 venv/
 cocoaenv/
 

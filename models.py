@@ -7,10 +7,21 @@ from tensorflow.keras.preprocessing import image as keras_image
 import io
 import tensorflow as tf
 
+
 def preprocess_image(image, target_size=(224, 224)):
     try:
-        print(type(image))
-        img = Image.open(BytesIO(image))
+        # Si es un path, cargar la imagen desde el disco
+        if isinstance(image, str):
+            img = keras_image.load_img(image, target_size=target_size)
+        # Si es bytes, abrir con PIL y luego convertir
+        elif isinstance(image, bytes):
+            img = Image.open(BytesIO(image)).resize(target_size)
+        # Si es un objeto PIL.Image
+        elif hasattr(image, 'resize'):
+            img = image.resize(target_size)
+        else:
+            raise ValueError(
+                "Tipo de imagen no soportado para preprocesamiento")
         img_array = keras_image.img_to_array(img)
         img_array = np.expand_dims(img_array, axis=0)
         img_array = img_array / 255.0
@@ -18,9 +29,10 @@ def preprocess_image(image, target_size=(224, 224)):
     except Exception as e:
         raise ValueError(f"Error al procesar la imagen: {str(e)}")
 
+
 def predict(model, image):
     models = "models/"
-    models_names ={
+    models_names = {
         'acm': 'ACM_ponchi_73%_0.9_final.keras',
         'mobilenet': 'mobilenet_cacao__84%_0.68_final.keras',
         'resnet': 'resnet_cacao_89%_0.48_final.keras',
@@ -52,4 +64,3 @@ def predict(model, image):
 #         }
 #         print("Models loaded successfully.")
 #     return MODELS
-
