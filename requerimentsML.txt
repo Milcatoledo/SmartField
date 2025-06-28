@@ -68,7 +68,6 @@ cudf-polars-cu12==25.2.2
 cufflinks==0.17.3
 cupy-cuda12x==13.3.0
 curl_cffi==0.11.4
-cuvs-cu12==25.2.1
 cvxopt==1.3.2
 cvxpy==1.6.6
 cycler==0.12.1
@@ -275,7 +274,6 @@ lazr.uri==1.0.6
 lazy_loader==0.4
 libclang==18.1.1
 libcugraph-cu12==25.2.0
-libcuvs-cu12==25.2.1
 libkvikio-cu12==25.2.1
 libpysal==4.13.0
 libraft-cu12==25.2.0
