@@ -4,19 +4,14 @@ from tensorflow.keras.models import load_model
 import numpy as np
 
 from tensorflow.keras.preprocessing import image as keras_image
-import io
-import tensorflow as tf
 
 
 def preprocess_image(image, target_size=(224, 224)):
     try:
-        # Si es un path, cargar la imagen desde el disco
         if isinstance(image, str):
             img = keras_image.load_img(image, target_size=target_size)
-        # Si es bytes, abrir con PIL y luego convertir
         elif isinstance(image, bytes):
             img = Image.open(BytesIO(image)).resize(target_size)
-        # Si es un objeto PIL.Image
         elif hasattr(image, 'resize'):
             img = image.resize(target_size)
         else:
@@ -47,20 +42,3 @@ def predict(model, image):
     labels = ['Etapa 1', 'Etapa 2', 'Etapa 3', 'Etapa 4']
     class_name = labels[predicted_class_index]
     return [class_name, predictions[0], models_names[model]]
-
-# def load_models():
-#     global MODELS
-
-#     if MODELS is None:
-#         acm = load_model("models/ACM_ponchi_73%_0.9_final.keras")
-#         mobilenet = load_model("models/mobilenet_cacao__84%_0.68_final.keras")
-#         resnet = load_model("models/resnet_cacao_89%_0.48_final.keras")
-#         xception = load_model("models/xception_cacao_89%_0.43_final.keras")
-#         MODELS = {
-#             "acm": acm,
-#             "mobilenet": mobilenet,
-#             "resnet": resnet,
-#             "xception": xception,
-#         }
-#         print("Models loaded successfully.")
-#     return MODELS

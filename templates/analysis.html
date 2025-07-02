@@ -16,7 +16,7 @@
 
         <div class="text-center mt-8">
             {% if source == "camera" %}
-                <input type="hidden" name="photo" id="captured-image">
+                <input type="hidden" name="camera" id="captured-image">
                 <div id="camera-container" class="hidden text-center mb-4">
                     <p class="text-sm text-gray-500 mb-4">Asegúrese de que la cámara esté enfocada en el fruto de cacao.</p>
                     <video id="camera-stream" autoplay playsinline class="mx-auto rounded-lg shadow-lg border"></video>
@@ -49,6 +49,8 @@
         {% endif %}
     </div>
 </form>
+
+
 
 <div id="result-card" class="mt-12 text-center" style="min-height: 200px; display: block !important; z-index: 9999;">
     <h3 class="font-bold text-xl mb-4 text-center">Resultado del análisis</h3>
