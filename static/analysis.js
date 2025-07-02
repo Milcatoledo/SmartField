@@ -1,18 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
   const sourceIsCamera = document.getElementById('camera-stream') !== null;
+  const analysisSection = document.getElementById('analysis-section');
+  const uploadInput = document.getElementById('upload-file');
+  const imagePreview = document.getElementById('image-preview');
+
+
+
+  if (uploadInput) {
+    uploadInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imagePreview.src = e.target.result;
+          analysisSection.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
 
   if (sourceIsCamera) {
     const cameraContainer = document.getElementById('camera-container');
     const cameraStream = document.getElementById('camera-stream');
     const captureButton = document.getElementById('capture-button');
     const capturedImageInput = document.getElementById('captured-image');
-    const imagePreview = document.getElementById('image-preview');
-    const analysisSection = document.getElementById('analysis-section');
-    const resultCard = document.getElementById('result-card');
     const finalResult = document.getElementById('final-result');
 
     // Mostrar contenedor de cámara
     cameraContainer.classList.remove('hidden');
+
 
     // Activar cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
