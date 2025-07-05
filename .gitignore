@@ -3,7 +3,7 @@ models/
 confusion_matrix_models.py
 test_model.py
 venv/
-cocoaenv/
+cocoacpu/
 
 # Archivos de caché de Python
 __pycache__/

@@ -1,9 +1,37 @@
+import os
+import uuid
 from models import predict
-from io import BytesIO
-from PIL import Image
 import base64
 from flask import Flask, render_template, request
 app = Flask(__name__)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+print(f"Base directory: {BASE_DIR}")
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "images")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+print(f"Upload folder created at: {UPLOAD_FOLDER}")
+
+
+def save_image_file(image_file, upload_folder=UPLOAD_FOLDER):
+    filename = image_file.filename
+    save_path = os.path.join(upload_folder, filename)
+    image_file.save(save_path)
+    return save_path
+
+
+def save_base64_image(base64_string, upload_folder=UPLOAD_FOLDER):
+    if not base64_string.startswith("data:image/"):
+        raise ValueError("Invalid base64 image string")
+
+    header, encoded = base64_string.split(",", 1)
+    file_extension = header.split(";")[0].split("/")[1]
+    filename = f"{uuid.uuid4()}.{file_extension}"
+    save_path = os.path.join(upload_folder, filename)
+
+    with open(save_path, "wb") as f:
+        f.write(base64.b64decode(encoded))
+
+    return save_path
 
 
 @app.route("/")
@@ -28,16 +56,13 @@ def analysis(source):
                                    error="Model and photo are required."
                                    )
         try:
-            if image:
-                image_data = image.read()
-            elif camera and camera.startswith("data:image"):
-                header, encoded = camera.split(",", 1)
-                camera = base64.b64decode(encoded)
-                camera = BytesIO(camera)
-                image_data = Image.open(camera).convert('RGB')
-                print(f"Image type: {type(image)}")
-            category, percentages, model_name = predict(
-                model_name, image_data)
+            if image and image.filename:
+                save_path = save_image_file(image)
+            else:
+                save_path = save_base64_image(camera)
+                # NOTE: el nuevo funcionamiento de camara no esta probado
+            category, percentages, model_name = predict(model_name, save_path)
+
             return render_template("analysis.html",
                                    source="gallery",
                                    category=category,

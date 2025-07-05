@@ -27,11 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const capturedImageInput = document.getElementById('captured-image');
     const finalResult = document.getElementById('final-result');
 
-    // Mostrar contenedor de cámara
     cameraContainer.classList.remove('hidden');
 
 
-    // Activar cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
       .then(stream => {
         cameraStream.srcObject = stream;
@@ -41,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error al acceder a la cámara:', err);
       });
 
-    // Captura la imagen
     captureButton.addEventListener('click', () => {
       const canvas = document.createElement('canvas');
       canvas.width = cameraStream.videoWidth;
@@ -51,16 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const imageDataUrl = canvas.toDataURL('image/png');
 
-      // Muestra vista previa
       imagePreview.src = imageDataUrl;
       analysisSection.style.display = 'block';
       resultCard.style.display = 'none';
       finalResult.classList.add('hidden');
 
-      // Guarda imagen para enviar en formulario
       capturedImageInput.value = imageDataUrl;
 
-      // Detiene la cámara
       const tracks = cameraStream.srcObject.getTracks();
       tracks.forEach(track => track.stop());
       cameraStream.srcObject = null;
