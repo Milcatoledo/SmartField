@@ -1,0 +1,46 @@
+services:
+  smartfield:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartfield-app
+    ports:
+      - "5000:5000"
+    volumes:
+      # Volumen para modelos (si están en directorio local)
+      - ./models:/app/models:ro
+      # Volumen para imágenes subidas (persistente)
+      - smartfield_images:/app/static/images
+      # Volumen para logs
+      - smartfield_logs:/app/logs
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=app.py
+      - PYTHONPATH=/app
+      # Configuración WebSocket
+      - WEBSOCKET_MAX_CONNECTIONS=10
+      - WEBSOCKET_PING_TIMEOUT=60
+      - WEBSOCKET_PING_INTERVAL=25
+      # Configuración ML
+      - ML_MODEL_CACHE=true
+      - ML_ASYNC_PROCESSING=true
+      - MAX_IMAGE_SIZE=5242880  # 5MB
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - smartfield-network
+
+volumes:
+  smartfield_images:
+    driver: local
+  smartfield_logs:
+    driver: local
+
+networks:
+  smartfield-network:
+    driver: bridge

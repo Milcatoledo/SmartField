@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+.coverage
+.coverage.*
+.cache
+.pytest_cache
+.mypy_cache
+.tox
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Test files
+tests/
+
+# Development files
+confusion_matrix_models.py
+test_model.py
+cocoacpu/

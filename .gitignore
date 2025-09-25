@@ -4,15 +4,55 @@ confusion_matrix_models.py
 test_model.py
 venv/
 cocoacpu/
+.venv/
+
+# UV files
+uv.lock
+*.egg-info/
+
+# Docker
+.docker/
 
 # Archivos de caché de Python
 __pycache__/
 *.py[cod]
+*.so
+*.pyo
+*.pyd
+.Python
+
+# Logs
+logs/
+*.log
 
 # Archivos de configuración de IDEs
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # Archivos de sistema
 .DS_Store
 Thumbs.db
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Static files generados
+static/images/*.jpg
+static/images/*.png
+static/images/*.jpeg
+!static/images/README.md
