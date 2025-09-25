@@ -1,55 +1,255 @@
-<!-- stream.html: Visualización en tiempo real de imágenes recibidas por WebSocket y su resultado -->
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>SmartField Streaming</title>
-    <link rel="stylesheet" href="/static/index.css">
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f7f7f7; }
-        #image-preview { max-width: 400px; max-height: 400px; border: 2px solid #333; margin-bottom: 16px; }
-        #result { font-size: 1.2em; margin-top: 12px; }
-        #status { color: #888; margin-bottom: 8px; }
-    </style>
-</head>
-<body>
-    <h2>SmartField - Streaming WebSocket</h2>
-    <div id="status">Conectando a WebSocket...</div>
-    <img id="image-preview" src="" alt="Imagen recibida" style="display:none;" />
-    <div id="result"></div>
-    <script>
-        const socket = io();
-        const status = document.getElementById('status');
-        const img = document.getElementById('image-preview');
-        const result = document.getElementById('result');
+{% extends "base.html" %}
 
-        socket.on('connect', () => {
-            status.textContent = 'Conectado a WebSocket';
-        });
+{% block title %}Streaming en Tiempo Real - Smart Field{% endblock %}
 
-        socket.on('disconnect', () => {
-            status.textContent = 'Desconectado de WebSocket';
-        });
+{% block content %}
 
-        // Recibe imagen y resultado
-        socket.on('image_frame', data => {
-            if (data.image) {
-                img.src = data.image;
-                img.style.display = 'block';
-            }
-        });
+<section class="py-24 md:py-32 hero-bg">
+    <div class="container mx-auto px-6 text-center">
+        <h2 class="text-4xl md:text-5xl font-extrabold text-[#4A3F35] leading-tight">
+            Análisis en Tiempo Real<br/>
+            <span class="text-[#6F4E37]">Streaming WebSocket</span>
+        </h2>
+        <p class="mt-6 text-lg md:text-xl max-w-3xl mx-auto text-gray-600">
+            Reciba y analice imágenes de cacao desde dispositivos IoT en tiempo real con resultados instantáneos.
+        </p>
+        <div id="status" class="mt-8 px-6 py-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg inline-block font-semibold">
+            Conectando a WebSocket...
+        </div>
+        
+        <!-- Selector de modelo -->
+        <div class="mt-6">
+            <label for="model-select" class="block text-sm font-medium text-gray-700 mb-2">
+                Seleccionar Modelo de Análisis:
+            </label>
+            <select id="model-select" class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-[#6F4E37] focus:border-[#6F4E37]">
+                <option value="acm">ACM Ponchi (92%)</option>
+                <option value="mobilenet">MobileNet Cacao (84%)</option>
+                <option value="resnet">ResNet Cacao (89%)</option>
+                <option value="xception">Xception Cacao (89%)</option>
+            </select>
+        </div>
+    </div>
+</section>
 
-        socket.on('analysis_result', data => {
-            result.innerHTML = `<b>Resultado:</b> ${data.category}<br>
-                <b>Confianza:</b> ${(data.confidence * 100).toFixed(1)}%<br>
-                <b>Modelo:</b> ${data.model_name}<br>
-                <b>Timestamp:</b> ${data.timestamp}`;
-        });
+<section id="resultados" class="py-20 md:py-24 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                
+                <!-- Video Stream en Vivo -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-2xl font-bold text-[#4A3F35] mb-4 text-center">Video Stream en Vivo</h3>
+                    <div class="flex flex-col justify-center items-center min-h-[300px]">
+                        <div class="relative">
+                            <img id="video-stream" 
+                                 src="" 
+                                 alt="Esperando video..." 
+                                 class="max-w-full max-h-[400px] rounded-lg shadow-md border-2 border-gray-300"
+                                 style="display:none;" />
+                            <div id="stream-placeholder" class="text-gray-500 text-center">
+                                <div class="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <svg class="w-10 h-10 text-gray-400 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14 6a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                                <p>Esperando video stream desde ESP32...</p>
+                            </div>
+                            
+                            <!-- Indicador de stream activo -->
+                            <div id="stream-indicator" class="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2" style="display:none;">
+                                <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                LIVE
+                            </div>
+                        </div>
+                        
+                        <!-- Botón de Captura -->
+                        <button id="capture-btn" 
+                                class="mt-4 bg-[#6F4E37] text-white font-bold px-8 py-3 rounded-lg shadow-lg hover:bg-[#5a402d] transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                            <span class="flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                                </svg>
+                                Capturar y Analizar Frame
+                            </span>
+                        </button>
+                        
+                        <!-- Contador de frames -->
+                        <div id="frame-counter" class="mt-2 text-sm text-gray-500">
+                            Frames recibidos: <span id="frame-count">0</span>
+                        </div>
+                    </div>
+                </div>
 
-        socket.on('error', data => {
-            result.innerHTML = `<span style='color:red'>Error: ${data.message}</span>`;
-        });
-    </script>
-</body>
-</html>
+                <!-- Resultados del análisis -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-2xl font-bold text-[#4A3F35] mb-4 text-center">Resultado del Análisis</h3>
+                    <div id="result" class="min-h-[300px] flex items-center justify-center text-gray-500">
+                        <div class="text-center">
+                            <div class="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+                                <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12a1 1 0 102 0V7a1 1 0 10-2 0v5zM9 4a1 1 0 112 0 1 1 0 01-2 0z"></path>
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <p>Esperando análisis...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+    const socket = io();
+    const status = document.getElementById('status');
+    const videoStream = document.getElementById('video-stream');
+    const streamPlaceholder = document.getElementById('stream-placeholder');
+    const streamIndicator = document.getElementById('stream-indicator');
+    const captureBtn = document.getElementById('capture-btn');
+    const frameCounter = document.getElementById('frame-count');
+    const result = document.getElementById('result');
+    
+    let currentFrame = null;
+    let frameCount = 0;
+    let isStreaming = false;
+
+    socket.on('connect', () => {
+        console.log('WebSocket conectado');
+        status.innerHTML = `
+            <span class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-700" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-green-700 font-semibold">Conectado a WebSocket</span>
+            </span>
+        `;
+        status.className = 'mt-8 px-6 py-3 bg-green-100 border border-green-400 rounded-lg inline-block';
+    });
+
+    // Función para obtener el modelo seleccionado
+    function getSelectedModel() {
+        return document.getElementById('model-select').value;
+    }
+
+    socket.on('disconnect', () => {
+        console.log('WebSocket desconectado');
+        status.innerHTML = `
+            <span class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-red-700" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-red-700 font-semibold">Desconectado de WebSocket</span>
+            </span>
+        `;
+        status.className = 'mt-8 px-6 py-3 bg-red-100 border border-red-400 rounded-lg inline-block';
+        
+        // Reset streaming state
+        isStreaming = false;
+        captureBtn.disabled = true;
+        streamIndicator.style.display = 'none';
+        currentFrame = null;
+    });
+
+    // Recibe frames de video continuo
+    socket.on('image_received', data => {
+        console.log('Frame de video recibido:', data.timestamp);
+        if (data.image) {
+            // Mostrar frame en el stream
+            videoStream.src = data.image;
+            videoStream.style.display = 'block';
+            streamPlaceholder.style.display = 'none';
+            streamIndicator.style.display = 'flex';
+            
+            // Guardar frame actual para captura
+            currentFrame = data.image;
+            frameCount++;
+            frameCounter.textContent = frameCount;
+            
+            // Habilitar botón de captura si hay frame disponible
+            captureBtn.disabled = false;
+            isStreaming = true;
+            
+            console.log('Frame mostrado en stream, disponible para captura');
+        }
+    });
+    
+    // Botón de captura - analizar frame actual
+    captureBtn.addEventListener('click', () => {
+        if (currentFrame) {
+            console.log('Capturando frame para análisis...');
+            const selectedModel = getSelectedModel();
+            
+            // Enviar frame capturado para análisis
+            socket.emit('image_frame', {
+                image: currentFrame,
+                model: selectedModel
+            });
+            
+            // Feedback visual
+            captureBtn.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Analizando...
+                </span>
+            `;
+            captureBtn.disabled = true;
+        }
+    });
+
+    socket.on('analysis_result', data => {
+        console.log('Resultado de análisis recibido:', data);
+        const confidenceColor = data.confidence >= 0.8 ? 'text-green-700' : 
+                                data.confidence >= 0.6 ? 'text-yellow-700' : 'text-red-700';
+        
+        result.innerHTML = `
+            <div class="space-y-4">
+                <div class="text-center">
+                    <div class="text-3xl font-bold ${confidenceColor} mb-2">${data.category}</div>
+                    <div class="text-lg text-gray-600">Confianza: ${(data.confidence * 100).toFixed(1)}%</div>
+                </div>
+                <div class="border-t pt-4 space-y-2">
+                    <div><span class="font-semibold">Modelo:</span> ${data.model_name}</div>
+                    <div><span class="font-semibold">Timestamp:</span> ${new Date(data.timestamp).toLocaleString()}</div>
+                    <div class="text-sm text-gray-500">Frame capturado y analizado</div>
+                </div>
+            </div>
+        `;
+        
+        // Restaurar botón de captura
+        if (isStreaming) {
+            captureBtn.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                    </svg>
+                    Capturar y Analizar Frame
+                </span>
+            `;
+            captureBtn.disabled = false;
+        }
+    });
+
+    socket.on('error', data => {
+        console.log('Error recibido:', data);
+        result.innerHTML = `
+            <div class="text-center text-red-600">
+                <div class="text-xl font-bold mb-2">Error</div>
+                <p>${data.message}</p>
+            </div>
+        `;
+    });
+
+    // Debug: escuchar todos los eventos
+    socket.onAny((event, ...args) => {
+        console.log('Evento WebSocket recibido:', event, args);
+    });
+</script>
+
+{% endblock %}

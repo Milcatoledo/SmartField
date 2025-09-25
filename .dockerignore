@@ -1,6 +1,7 @@
 # Git
 .git
 .gitignore
+README.md
 
 # Docker
 Dockerfile
@@ -14,6 +15,8 @@ __pycache__
 *.pyd
 .Python
 .venv
+venv/
+env/
 .coverage
 .coverage.*
 .cache
@@ -35,11 +38,24 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+*.log
 
 # Test files
 tests/
+*_test.py
+test_*.py
 
 # Development files
 confusion_matrix_models.py
 test_model.py
 cocoacpu/
+send_image.py
+esp32_websocket_example.py
+pyproject.toml
+*.md
+
+# Images not needed in container
+images/
+
+# UV lock files
+uv.lock

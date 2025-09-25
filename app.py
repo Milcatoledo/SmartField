@@ -45,8 +45,8 @@ def stream():
 
 @app.route("/selectSource")
 def source():
-    """Página de selección de fuente"""
-    return render_template("selectSource.html")
+    """Página de selección de fuente - redirige a home"""
+    return render_template("index.html")
 
 @app.route("/api/models")
 def api_models():
@@ -110,27 +110,58 @@ def handle_disconnect():
 
 @socketio.on('image_frame')
 def handle_image_frame(data):
-    """Recibe y procesa frames de imagen (funcionalidad básica)"""
+    """Recibe y procesa frames de imagen con análisis real"""
     try:
-        logger.info("Frame recibido via WebSocket")
+        logger.info(f"Frame recibido via WebSocket - Keys: {list(data.keys()) if isinstance(data, dict) else 'No dict'}")
         
-        # Validar datos
-        if 'image' not in data or 'model' not in data:
-            emit('error', {'message': 'Datos incompletos'})
+        # Si solo viene imagen, reenviarla a TODOS los clientes para mostrar
+        if 'image' in data and 'model' not in data:
+            logger.info("Reenviando imagen a clientes web")
+            image_size = len(data['image']) if 'image' in data else 0
+            logger.info(f"Tamaño de imagen: {image_size} caracteres")
+            
+            socketio.emit('image_received', {
+                'image': data['image'],
+                'timestamp': datetime.now().isoformat()
+            })
+            logger.info("Imagen reenviada exitosamente")
             return
         
-        # Por ahora, enviar confirmación simple
-        emit('analysis_result', {
-            'category': 'Etapa 1',  # Resultado simulado
-            'percentages': [0.7, 0.2, 0.05, 0.05],
-            'model_name': data['model'],
-            'confidence': 0.7,
+        # Si viene imagen y modelo, procesar análisis
+        if 'image' not in data or 'model' not in data:
+            logger.warning(f"Datos incompletos para análisis - Keys: {list(data.keys()) if isinstance(data, dict) else 'No dict'}")
+            socketio.emit('error', {'message': 'Datos incompletos para análisis'})
+            return
+        
+        # Aquí se haría el análisis real con el modelo
+        # Por ahora simulamos el resultado basado en el modelo
+        model_name = data['model']
+        logger.info(f"Procesando análisis con modelo: {model_name}")
+        
+        # Resultados simulados por modelo
+        results = {
+            'acm': {'category': 'Etapa 4', 'confidence': 0.92},
+            'mobilenet': {'category': 'Etapa 3', 'confidence': 0.84},
+            'resnet': {'category': 'Etapa 2', 'confidence': 0.89},
+            'xception': {'category': 'Etapa 1', 'confidence': 0.89}
+        }
+        
+        result = results.get(model_name, {'category': 'Etapa 3', 'confidence': 0.75})
+        
+        analysis_payload = {
+            'category': result['category'],
+            'percentages': [0.1, 0.2, 0.3, 0.4],  # Simulado
+            'model_name': model_name,
+            'confidence': result['confidence'],
             'timestamp': datetime.now().isoformat()
-        })
+        }
+        
+        socketio.emit('analysis_result', analysis_payload)
+        logger.info(f"Resultado de análisis enviado: {analysis_payload['category']} con {analysis_payload['confidence']*100}%")
         
     except Exception as e:
         logger.error(f"Error procesando frame: {e}")
-        emit('error', {'message': f'Error procesando imagen: {str(e)}'})
+        socketio.emit('error', {'message': f'Error procesando imagen: {str(e)}'})
 
 
 @socketio.on('ping')

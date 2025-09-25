@@ -13,7 +13,7 @@ def preprocess_image(img_path, img_size=(224, 224)):
 def predict(model, image_path):
     models_dir = "models/"
     models_names = {
-        'acm': 'ACM_ponchi_73%_0.9_final.keras',
+        'acm': 'ACM_ponchi_92%_0.3_best.keras',
         'mobilenet': 'mobilenet_cacao__84%_0.68_final.keras',
         'resnet': 'resnet_cacao_89%_0.48_final.keras',
         'xception': 'xception_cacao_89%_0.43_final.keras'

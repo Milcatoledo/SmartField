@@ -1,40 +1,43 @@
-# Dockerfile para SmartField
+# Dockerfile optimizado para SmartField
 FROM python:3.11-slim
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
+# Instalar solo dependencias de runtime necesarias
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
     libgomp1 \
-    libgthread-2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Crear directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos de proyecto
-COPY . .
+# Copiar solo requirements primero para mejor cacheo
+COPY requirements.txt .
 
-# Instalar dependencias directamente con pip (más simple)
-RUN pip install --no-cache-dir \
-    flask>=2.3.0 \
-    flask-socketio>=5.3.0 \
-    tensorflow>=2.13.0 \
-    opencv-python-headless>=4.8.0 \
-    pillow>=10.0.0 \
-    numpy>=1.24.0 \
-    python-dotenv>=1.0.0 \
-    eventlet>=0.33.0 \
-    python-socketio>=5.8.0 \
-    requests>=2.31.0
+# Instalar dependencias con binarios precompilados (versiones específicas)
+RUN pip install --no-cache-dir --only-binary=all \
+    flask==2.3.3 \
+    flask-socketio==5.3.6 \
+    tensorflow-cpu==2.15.0 \
+    opencv-python-headless==4.8.1.78 \
+    pillow==10.2.0 \
+    numpy==1.24.4 \
+    python-dotenv==1.0.1 \
+    eventlet==0.33.3 \
+    python-socketio==5.10.0 \
+    requests==2.31.0
+
+# Copiar solo archivos necesarios
+COPY app.py models.py ./
+COPY templates/ ./templates/
+COPY static/ ./static/
+COPY models/ ./models/
 
 # Crear directorios necesarios
-RUN mkdir -p static/images models logs
+RUN mkdir -p static/images logs
 
 # Crear usuario no-root para seguridad
-RUN useradd --create-home --shell /bin/bash smartfield && \
+RUN adduser --disabled-password --gecos '' smartfield && \
     chown -R smartfield:smartfield /app
 
 # Cambiar a usuario no-root
@@ -43,10 +46,17 @@ USER smartfield
 # Exponer puerto
 EXPOSE 5000
 
-# Variables de entorno
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
-ENV PYTHONPATH=/app
+# Variables de entorno optimizadas
+ENV FLASK_APP=app.py \
+    FLASK_ENV=production \
+    PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:5000/api/health', timeout=5)"
 
 # Comando de inicio
-CMD ["python", "app.py"]
+CMD ["python", "-u", "app.py"]
