@@ -27,8 +27,29 @@ socketio = SocketIO(
 
 # Configuración de directorios
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMP_DIR = os.path.join(BASE_DIR, "temp")
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 logger.info(f"Base directory: {BASE_DIR}")
+
+def save_base64_image_temp(base64_string):
+    """Guarda imagen base64 temporalmente para análisis"""
+    try:
+        if base64_string.startswith("data:image/"):
+            header, encoded = base64_string.split(",", 1)
+        else:
+            encoded = base64_string
+            
+        filename = f"temp_{uuid.uuid4().hex[:8]}.jpg"
+        temp_path = os.path.join(TEMP_DIR, filename)
+        
+        with open(temp_path, "wb") as f:
+            f.write(base64.b64decode(encoded))
+            
+        return temp_path
+    except Exception as e:
+        logger.error(f"Error guardando imagen temporal: {e}")
+        return None
 # logger.info(f"Upload folder: {UPLOAD_FOLDER}")
 # logger.info(f"Models directory: {MODELS_DIR}")
 
@@ -133,31 +154,46 @@ def handle_image_frame(data):
             socketio.emit('error', {'message': 'Datos incompletos para análisis'})
             return
         
-        # Aquí se haría el análisis real con el modelo
-        # Por ahora simulamos el resultado basado en el modelo
-        model_name = data['model']
-        logger.info(f"Procesando análisis con modelo: {model_name}")
+        # Usar modelo real Xception
+        logger.info("Procesando análisis con modelo Xception")
         
-        # Resultados simulados por modelo
-        results = {
-            'acm': {'category': 'Etapa 4', 'confidence': 0.92},
-            'mobilenet': {'category': 'Etapa 3', 'confidence': 0.84},
-            'resnet': {'category': 'Etapa 2', 'confidence': 0.89},
-            'xception': {'category': 'Etapa 1', 'confidence': 0.89}
-        }
+        # Guardar imagen temporalmente
+        temp_image_path = save_base64_image_temp(data['image'])
+        if not temp_image_path:
+            socketio.emit('error', {'message': 'Error procesando imagen'})
+            return
+            
+        try:
+            # Usar función predict del archivo models.py con modelo Xception
+            category, percentages, model_used = predict('xception', temp_image_path)
+            confidence = max(percentages) if percentages else 0.0
+            
+            logger.info(f"Resultado del modelo: {category} (confianza: {confidence})")
+            
+        except Exception as e:
+            logger.error(f"Error en predicción: {e}")
+            category = "Error en análisis"
+            confidence = 0.0
+            percentages = [0.0, 0.0, 0.0, 0.0]
         
-        result = results.get(model_name, {'category': 'Etapa 3', 'confidence': 0.75})
+        finally:
+            # Limpiar archivo temporal
+            if temp_image_path and os.path.exists(temp_image_path):
+                try:
+                    os.remove(temp_image_path)
+                except Exception as e:
+                    logger.warning(f"No se pudo eliminar archivo temporal: {e}")
         
         analysis_payload = {
-            'category': result['category'],
-            'percentages': [0.1, 0.2, 0.3, 0.4],  # Simulado
-            'model_name': model_name,
-            'confidence': result['confidence'],
+            'category': category,
+            'percentages': percentages,
+            'model_name': 'Xception Cacao (89%)',
+            'confidence': confidence,
             'timestamp': datetime.now().isoformat()
         }
         
         socketio.emit('analysis_result', analysis_payload)
-        logger.info(f"Resultado de análisis enviado: {analysis_payload['category']} con {analysis_payload['confidence']*100}%")
+        logger.info(f"Resultado de análisis enviado: {category} con {confidence*100:.1f}%")
         
     except Exception as e:
         logger.error(f"Error procesando frame: {e}")
