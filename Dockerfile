@@ -17,11 +17,12 @@ COPY requirements.txt .
 # Instalar dependencias con binarios precompilados (versiones específicas)
 RUN pip install --no-cache-dir --only-binary=all \
     flask==2.3.3 \
+    flask-sock \
     flask-socketio==5.3.6 \
-    tensorflow-cpu==2.15.0 \
+    tensorflow-cpu==2.20.0 \
     opencv-python-headless==4.8.1.78 \
     pillow==10.2.0 \
-    numpy==1.24.4 \
+    numpy==1.26.0 \
     python-dotenv==1.0.1 \
     eventlet==0.33.3 \
     python-socketio==5.10.0 \

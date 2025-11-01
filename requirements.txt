@@ -1,5 +1,5 @@
-application-utility==1.4.0
-arandr==0.1.11
+flask-sock 
+simple-websocket
 attrs==25.3.0
 autocommand==2.2.2
 btrfsutil==6.14

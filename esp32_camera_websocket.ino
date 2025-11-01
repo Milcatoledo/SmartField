@@ -1,30 +1,24 @@
 /*
- * ESP32 WebSocket Video Streaming para SmartField
- * Captura frames de cámara y los envía vía WebSocket
+ * ESP32 Camera WebSocket - Ultra Estable
  */
 
 #include <WiFi.h>
 #include <WebSocketsClient.h>
-#include <ArduinoJson.h>
 #include <esp_camera.h>
 #include <base64.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
-// Configuración WiFi
-const char* ssid = "TU_SSID";
-const char* password = "TU_PASSWORD";
+const char* ssid = "WILLIAN-BUCAY";
+const char* password = "Willian2002";
+const char* ws_server = "192.168.1.7";
+const int ws_port = 5000;
+const char* ws_path = "/ws";
 
-// Configuración WebSocket
-const char* websocket_server = "192.168.1.100";  // IP de tu servidor
-const int websocket_port = 5000;
-const char* websocket_path = "/socket.io/?EIO=4&transport=websocket";
-
-// Cliente WebSocket
 WebSocketsClient webSocket;
 
-// Configuración de cámara (ESP32-CAM)
-camera_config_t config;
-
 void setupCamera() {
+  camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
   config.pin_d0 = 5;
@@ -43,98 +37,112 @@ void setupCamera() {
   config.pin_sscb_scl = 27;
   config.pin_pwdn = 32;
   config.pin_reset = -1;
-
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
-  config.frame_size = FRAMESIZE_VGA;  // 640x480
-  config.jpeg_quality = 12;           // 0-63, menor número = mejor calidad
+  config.frame_size = FRAMESIZE_QQVGA;
+  config.jpeg_quality = 25;
   config.fb_count = 1;
+  config.fb_location = CAMERA_FB_IN_PSRAM;
+  config.grab_mode = CAMERA_GRAB_LATEST;
 
-  // Inicializar cámara
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
-    Serial.printf("Error inicializando cámara: 0x%x", err);
-    return;
+    Serial.printf("CAM ERROR: 0x%x\n", err);
+    delay(3000);
+    ESP.restart();
   }
-  Serial.println("Cámara inicializada correctamente");
+  Serial.println("CAM: OK");
 }
 
-void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
-  switch(type) {
-    case WStype_DISCONNECTED:
-      Serial.println("WebSocket Desconectado");
-      break;
-      
-    case WStype_CONNECTED:
-      Serial.printf("WebSocket Conectado a: %s\n", payload);
-      break;
-      
-    case WStype_TEXT:
-      Serial.printf("Mensaje recibido: %s\n", payload);
-      break;
-      
-    default:
-      break;
+void wsEvent(WStype_t type, uint8_t* payload, size_t length) {
+  if (type == WStype_CONNECTED) {
+    Serial.println("WS: CONNECTED");
+  } else if (type == WStype_DISCONNECTED) {
+    Serial.println("WS: DISCONNECTED");
   }
 }
 
 void sendFrame() {
-  // Capturar frame
-  camera_fb_t * fb = esp_camera_fb_get();
+  camera_fb_t* fb = esp_camera_fb_get();
   if (!fb) {
-    Serial.println("Error capturando imagen");
+    Serial.println("NO FRAME");
     return;
   }
 
-  // Convertir a base64
-  String imageBase64 = base64::encode(fb->buf, fb->len);
-  String dataUrl = "data:image/jpeg;base64," + imageBase64;
+  Serial.printf("IMG: %db | RAM: %d\n", fb->len, ESP.getFreeHeap());
 
-  // Crear payload JSON
-  DynamicJsonDocument doc(imageBase64.length() + 200);
-  doc["image"] = dataUrl;
+  String b64 = base64::encode(fb->buf, fb->len);
+  String json = "{\"event\":\"image_frame\",\"image\":\"" + b64 + "\"}";
+  
+  webSocket.sendTXT(json);
+  Serial.println("SENT");
 
-  String jsonString;
-  serializeJson(doc, jsonString);
-
-  // Enviar por WebSocket
-  webSocket.sendTXT("42[\"image_frame\"," + jsonString + "]");
-
-  Serial.printf("Frame enviado - Tamaño: %d bytes\n", fb->len);
-
-  // Liberar memoria
   esp_camera_fb_return(fb);
 }
 
 void setup() {
+  // DESHABILITAR BROWNOUT Y WATCHDOG
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+  
   Serial.begin(115200);
-  Serial.println("Iniciando ESP32 WebSocket Camera...");
+  delay(3000);
+  
+  Serial.println("\n\n=== SMARTFIELD CAM v3 ===");
+  Serial.printf("FREE RAM: %d bytes\n", ESP.getFreeHeap());
 
-  // Configurar cámara
-  setupCamera();
+  // Reducir frecuencia para estabilidad
+  setCpuFrequencyMhz(160);
+  Serial.println("CPU: 160MHz");
 
-  // Conectar WiFi
+  // WiFi con delays largos
+  Serial.println("WIFI: Starting...");
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);  // Deshabilitar sleep mode
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  
+  int tries = 0;
+  while (WiFi.status() != WL_CONNECTED && tries < 40) {
+    delay(1000);  // Delay MÁS LARGO
     Serial.print(".");
+    tries++;
+    yield();
   }
-  Serial.println("");
-  Serial.print("WiFi conectado - IP: ");
+  
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("\nWIFI: TIMEOUT");
+    delay(5000);
+    ESP.restart();
+  }
+  
+  Serial.println("\nWIFI: CONNECTED");
+  Serial.print("IP: ");
   Serial.println(WiFi.localIP());
+  Serial.printf("RAM: %d\n", ESP.getFreeHeap());
 
-  // Configurar WebSocket
-  webSocket.begin(websocket_server, websocket_port, websocket_path);
-  webSocket.onEvent(webSocketEvent);
+  delay(1000);
+
+  // Cámara
+  Serial.println("Starting camera...");
+  setupCamera();
+  Serial.printf("RAM: %d\n", ESP.getFreeHeap());
+
+  delay(1000);
+
+  // WebSocket
+  Serial.printf("WS: %s:%d%s\n", ws_server, ws_port, ws_path);
+  webSocket.begin(ws_server, ws_port, ws_path);
+  webSocket.onEvent(wsEvent);
   webSocket.setReconnectInterval(5000);
+  
+  Serial.println("\n=== READY ===\n");
 }
 
 void loop() {
   webSocket.loop();
+  yield();
   
-  // Enviar frame cada 2 segundos (ajustable)
   static unsigned long lastFrame = 0;
-  if (millis() - lastFrame > 2000) {
+  if (millis() - lastFrame > 5000) {
     if (WiFi.status() == WL_CONNECTED && webSocket.isConnected()) {
       sendFrame();
     }
